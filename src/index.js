@@ -4,7 +4,6 @@ import React, {
 } from "react";
 import ReactDOM, { render } from "react-dom";
 import { fetchUser, fetchPosts } from "./fakeApi";
-import { findNodeByComponentName, Utils } from "react-fiber-traverse";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -55,28 +54,11 @@ render(<ProfilePage />, rootElement);
 let fiberRoot = rootElement._reactRootContainer._internalRoot;
 console.log('fiberRoot', fiberRoot);
 let hostRootFiberNode = fiberRoot.current;
-let hostRootFiberNodeSibling = fiberRoot.current;
-let hostRootFiberNodeChild = fiberRoot.current;
 console.log('initial hostRoot', hostRootFiberNode);
 
 //first child of hostRoot is ProfilePage 
 let profilePageRoot = hostRootFiberNode.child;
 console.log('profilePageRoot', profilePageRoot);
-
-// while (hostRootFiberNodeSibling) {
-//   hostRootFiberNodeSibling = hostRootFiberNodeSibling.sibling;
-//   console.log('hostroot in sibling loop', hostRootFiberNodeSibling);
-// }
-
-// while (hostRootFiberNodeChild) {
-//   hostRootFiberNodeChild = hostRootFiberNodeChild.child;
-//   console.log('hostroot in child loop', hostRootFiberNodeChild);
-// }
-
-
-// ReactDOM.createRoot(rootElement).render(
-//   <ProfilePage />
-// );
 
 
 
