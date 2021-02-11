@@ -1,20 +1,20 @@
-export function fetchUser() {
-  console.log("fetch user...");
-  return fetch('https://swapi.dev/api/people/1/')
+export function fetchUser(id) {
+  // console.log("fetch user...");
+  console.log('id', id)
+
+  return fetch(`https://swapi.dev/api/people/${id}/`)
     .then(response => response.json())
     .then(data => {
-      console.log('data', data);
       const { name } = data;
       return name;
     })
 }
 
-export function fetchPosts() {
-  console.log("fetch posts...");
-  return fetch('https://swapi.dev/api/people/1/')
+export function fetchPosts(id) {
+  // console.log("fetch posts...");
+  return fetch(`https://swapi.dev/api/people/${id}/`)
     .then(response => response.json())
     .then(data => {
-      console.log('data', data);
       const { starships } = data;
       return starships;
     })
