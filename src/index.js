@@ -4,13 +4,21 @@ import React, {
 } from "react";
 import ReactDOM, { render } from "react-dom";
 import { fetchUser, fetchPosts } from "./fakeApi";
+import axios from 'axios';
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
   const [character, setCharacter] = useState(1);
 
   useEffect(() => {
-    fetchUser(character).then(u => setUser(u));
+    // fetchUser(character).then(u => setUser(u));
+    axios.get(`https://swapi.dev/api/people/${character}/`)
+      .then(response => response.json())
+      .then(data => {
+        const { name } = data.data;
+        return name;
+      })
+      .then(name => setUser(name));
   }, [character]);
 
   if (user === null) {
@@ -29,7 +37,14 @@ function ProfileTimeline(props) {
   const [posts, setPosts] = useState(null);
 
   useEffect(() => {
-    fetchPosts(props.character).then(p => setPosts(p));
+    // fetchPosts(props.character).then(p => setPosts(p));
+    axios.get(`https://swapi.dev/api/people/${props.character}/`)
+      .then(response => response.json())
+      .then(data => {
+        const { starships } = data.data;
+        return starships;
+      })
+      .then(starships => setPosts(starships));
   }, [props.character]);
 
   if (posts === null) {
@@ -59,8 +74,3 @@ console.log('initial hostRoot', hostRootFiberNode);
 //first child of hostRoot is ProfilePage 
 let profilePageRoot = hostRootFiberNode.child;
 console.log('profilePageRoot', profilePageRoot);
-
-
-
-
-
