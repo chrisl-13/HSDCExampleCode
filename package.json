@@ -5,6 +5,11 @@
   "keywords": [],
   "main": "src/index.js",
   "dependencies": {
+    "@babel/core": "^7.12.13",
+    "@babel/parser": "^7.12.15",
+    "@babel/preset-env": "^7.12.13",
+    "babel-core": "^6.26.3",
+    "fs": "0.0.1-security",
     "react": "0.0.0-experimental-5faf377df",
     "react-dom": "0.0.0-experimental-5faf377df",
     "react-fiber-traverse": "0.0.8",
