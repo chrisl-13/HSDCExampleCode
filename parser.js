@@ -34,17 +34,22 @@ const getDependencies = (filename) => {
       if (node.source.value.indexOf('./') !== -1) dependencies.push(node.source.value);
     },
     MemberExpression: ({ node }) => {
-        if(node.object.name === 'axios') {
-          const dataRequest = new DataRequestObject('axios');
-          dataRequests.push(dataRequest);
-        }
+      if (node.object.name === 'axios') {
+        const dataRequest = new DataRequestObject('axios');
+        dataRequests.push(dataRequest);
+      }
     },
     enter(path) {
       //Check data request type
+
       if (path.isIdentifier({ name: "fetch" })) {
         const dataRequest = new DataRequestObject('fetch');
         dataRequests.push(dataRequest);
       }
+      // if (path.isIdentifier({ name: "axios" })) {
+      //   const dataRequest = new DataRequestObject('axios');
+      //   dataRequests.push(dataRequest);
+      // }
       if (path.isIdentifier({ name: "ajax" })) {
         const dataRequest = new DataRequestObject('ajax');
         dataRequests.push(dataRequest);
@@ -58,8 +63,6 @@ const getDependencies = (filename) => {
 
   const id = ID++;
   cache[filename] = id;
-
-  console.log(dataRequests);
 
   return {
     id,
@@ -101,4 +104,5 @@ const dependenciesGraph = (entryFile) => {
 }
 
 
-dependenciesGraph('./src/fakeApi.js');
+console.log(dependenciesGraph('./src/index.js'));
+console.log(cache);

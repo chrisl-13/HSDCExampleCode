@@ -1,37 +1,12 @@
-import React, {
-  useState,
-  useEffect
-} from "react";
-import ReactDOM, { render } from "react-dom";
-import { fetchUser, fetchPosts } from "./fakeApi";
-import axios from 'axios';
-import test from './test';
+import test from './test'
 
-function ProfilePage() {
-  const [user, setUser] = useState(null);
-  const [character, setCharacter] = useState(1);
-
-  useEffect(() => {
-    // fetchUser(character).then(u => setUser(u));
-    axios.get(`https://swapi.dev/api/people/${character}/`)
-      .then(response => response.json())
-      .then(data => {
-        const { name } = data.data;
-        return name;
-      })
-      .then(name => setUser(name));
-  }, [character]);
-
-  if (user === null) {
-    return <p>Loading profile...</p>;
-  }
-  return (
-    <>
-      <h1>{user}</h1>
-      <ProfileTimeline user={user} character={character} />
-      <button onClick={() => setCharacter(character + 1)}>Change Character</button>
-    </>
-  );
+export function fetchUser(id) {
+  return fetch(`https://swapi.dev/api/people/${id}/`)
+    .then(response => response.json())
+    .then(data => {
+      const { name } = data;
+      return name;
+    })
 }
 
 function ProfileTimeline(props) {
