@@ -1,65 +1,108 @@
 const babelParser = require("@babel/parser");
 const fs = require("fs");
-const fileSrc = "/src/index.js"
-const content = fs.readFileSync(__dirname + fileSrc, "utf8");
+const traverse = require("@babel/traverse").default;
+const path = require("path");
 
-//Create data store
-const store = {
-  data_requests: [],
-}
+let ID = 0;
+const cache = {};
 
-//nodes to store in store.data_requests
-class data_request_node {
-  constructor(file_name, data_request) {
-    this.file_name = fileSrc;
-    this.data_request = {
-      request_type: null,
-      data_variables: null,
+//Obtain  target file's dependencies 
+const getDependencies = (filename) => {
+  //Declare dataRequestObject
+  const dataRequests = [];
+
+  class DataRequestObject {
+    constructor(dataRequestType) {
+      this.dataRequestType = dataRequestType;
     }
   }
-}
+  //Read file content
+  const content = fs.readFileSync(filename, "utf8");
 
-//stores the name/value of all ImportDeclaration nodes
-class dependencies {
-  constructor(file_name, imports) {
-    this.file_name = fileSrc;
-    this.imports = [];
-  }
-}
-
-const getTree = (content) => {
   //Parse file to convert it into an AST
   const raw_ast = babelParser.parse(content, {
     sourceType: "module",
     plugins: ["jsx"],
   });
 
-  const file_dependencies = new dependencies();
+  //Stores the name/value of all ImportDeclaration nodes
+  const dependencies = [];
 
-  raw_ast.program.body.forEach((ast_node) => {
-    if (ast_node.type === 'ImportDeclaration') {
-      if (ast_node.source.value.indexOf(`./`) !== -1) {
-        file_dependencies.imports.push(ast_node.source.value)
+  //Traverse AST using babeltraverse to identify imported nodes
+  traverse(raw_ast, {
+    ImportDeclaration: ({ node }) => {
+      if (node.source.value.indexOf('./') !== -1) dependencies.push(node.source.value);
+    },
+    MemberExpression: ({ node }) => {
+      if (node.object.name === 'axios') {
+        const dataRequest = new DataRequestObject('axios');
+        dataRequests.push(dataRequest);
+      }
+    },
+    enter(path) {
+      //Check data request type
+
+      if (path.isIdentifier({ name: "fetch" })) {
+        const dataRequest = new DataRequestObject('fetch');
+        dataRequests.push(dataRequest);
+      }
+      // if (path.isIdentifier({ name: "axios" })) {
+      //   const dataRequest = new DataRequestObject('axios');
+      //   dataRequests.push(dataRequest);
+      // }
+      if (path.isIdentifier({ name: "ajax" })) {
+        const dataRequest = new DataRequestObject('ajax');
+        dataRequests.push(dataRequest);
+      }
+      if (path.isIdentifier({ name: "XMLHttpRequest" })) {
+        const dataRequest = new DataRequestObject('XMLHttpRequest');
+        dataRequests.push(dataRequest);
       }
     }
   })
 
-  console.log(file_dependencies.imports)
+  const id = ID++;
+  cache[filename] = id;
 
-  // rawAst.program.body.forEach(
-  //   (astNode) => {
-  //     if (astNode.type === 'FunctionDeclaration') {
-  //       const new_node = new data_request_node();
-  //       console.log(astNode.body.body[2].expression)
-  //       new_node.data_request.request_type = astNode.body.body[2].expression.arguments[0].body.body[0].expression.callee.object.name;
-  //       store.data_requests.push(new_node)
-  //     }
-  //   })
-  // console.log(store.data_requests[0].data_request)
-  return store;
+  return {
+    id,
+    filename,
+    dependencies,
+    dataRequests
+  };
 };
 
-const app = getTree(content);
+const dependenciesGraph = (entryFile) => {
+  const entry = getDependencies(entryFile);
+  const queue = [entry];
 
-console.log(app);
+  for (const asset of queue) {
+    asset.mapping = {};
+    const dirname = path.dirname(asset.filename);
 
+    asset.dependencies.forEach(relativePath => {
+      //If there is no file extension, add it
+      let absolutePath = path.resolve(dirname, relativePath);
+      let fileCheck = fs.existsSync(absolutePath)
+      let child;
+
+      if (!fileCheck) {
+        absolutePath = path.resolve(dirname, relativePath + '.js'); //Test for .js
+        fileCheck = fs.existsSync(absolutePath);
+        if (!fileCheck) absolutePath = absolutePath + 'x'; //Test for .jsx
+      }
+
+      //Check for duplicate file paths
+      if (!cache[absolutePath]) {
+        child = getDependencies(absolutePath);
+        queue.push(child);
+      }
+      asset.mapping[relativePath] = cache[absolutePath];
+    })
+  }
+  return queue;
+}
+
+
+console.log(dependenciesGraph('./src/index.js'));
+console.log(cache);

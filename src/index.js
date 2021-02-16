@@ -5,6 +5,7 @@ import React, {
 import ReactDOM, { render } from "react-dom";
 import { fetchUser, fetchPosts } from "./fakeApi";
 import axios from 'axios';
+import test from './test';
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
